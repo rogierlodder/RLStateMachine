@@ -12,7 +12,7 @@ namespace RLStateMachine
         private int _CurrentState;
         private string _Name;
         private Graph G;
-        private Dictionary<int, SMNode> Nodes = new Dictionary<int, SMNode>();
+        private Dictionary<int, SMState> Nodes = new Dictionary<int, SMState>();
 
         public int CurrentState  { get { return _CurrentState; } }
         public string Name { get { return _Name; } }
@@ -33,11 +33,22 @@ namespace RLStateMachine
             G = new Graph();
         }
 
-        public void AddNode(int nodenr, string nodename, Action alwaysAction, List<Transition> transitions)
+        public void AddState(int nodenr, string nodename, List<Transition> transitions, Action alwaysAction = null)
         {
             G.AddNode(nodename);
-            SMNode N = new SMNode(nodenr, nodename, alwaysAction, transitions);
+            SMState N = new SMState(nodenr, nodename, alwaysAction, transitions);
             Nodes.Add(nodenr, N);
+        }
+
+        public SMState GetState(int stateNr)
+        {
+            if (Nodes.ContainsKey(stateNr)) return Nodes[stateNr];
+            else return null;
+        }
+
+        public SMState GetState(string stateName)
+        {
+            return Nodes.Values.Where(p => p.Name == stateName).FirstOrDefault();
         }
 
         public void Run()
@@ -56,7 +67,7 @@ namespace RLStateMachine
         }
     }
 
-    public class SMNode
+    public class SMState
     {
         private string _Name;
         private int _StateNum;
@@ -64,11 +75,11 @@ namespace RLStateMachine
         public int Number { get { return _StateNum; } }
         public string Name { get { return _Name; } }
 
-        public Action AlwaysAction;
+        public Action AlwaysAction { get; set; }
 
-        private List<Transition> Transitions = new List<Transition>();
+        public List<Transition> Transitions { get; private set; } = new List<Transition>();
 
-        public SMNode(int nodenr, string nodename, Action alwaysAction, List<Transition> transitions)
+        public SMState(int nodenr, string nodename, Action alwaysAction, List<Transition> transitions)
         {
             _StateNum = nodenr;
             _Name = nodename;
@@ -92,7 +103,6 @@ namespace RLStateMachine
             }
             return null;
         }
-
     }
 
     public class Transition
