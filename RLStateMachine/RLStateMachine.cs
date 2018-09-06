@@ -7,7 +7,7 @@ using Microsoft.Msagl.Drawing;
 
 namespace RLStateMachine
 {
-    public class RLStateMachine
+    public class RLSM
     {
         private int _CurrentState;
         private string _Name;
@@ -27,7 +27,7 @@ namespace RLStateMachine
             }
         }
 
-        public RLStateMachine(string name)
+        public RLSM(string name)
         {
             _Name = name;
             G = new Graph();
@@ -36,6 +36,8 @@ namespace RLStateMachine
         public void AddNode(int nodenr, string nodename, Action alwaysAction, List<Transition> transitions)
         {
             G.AddNode(nodename);
+            SMNode N = new SMNode(nodenr, nodename, alwaysAction, transitions);
+            Nodes.Add(nodenr, N);
         }
 
         public void Run()
