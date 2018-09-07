@@ -95,11 +95,7 @@ namespace RLStateMachine
             AlwaysAction?.Invoke();
             foreach (var T in Transitions)
             {
-                if (T != null)
-                {
-                    var newState = T.Check();
-                    if (newState != null) return newState;
-                }
+                if (T != null) return T.Check();                    
             }
             return null;
         }

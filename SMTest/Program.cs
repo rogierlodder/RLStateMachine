@@ -29,6 +29,7 @@ namespace SMTest
                 new Transition("error"  , () => error == true, null, (int)States.Error)
             });
 
+            SM.SaveGraph(@"C:\temp\sampleGraph");
         }
     }
 }
