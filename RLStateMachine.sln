@@ -1,13 +1,13 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 14
-VisualStudioVersion = 14.0.25420.1
+# Visual Studio 15
+VisualStudioVersion = 15.0.27703.2042
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RLStateMachine", "RLStateMachine\RLStateMachine.csproj", "{BB18B506-D80B-4916-AE0A-7AA7A57CE865}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SMTest", "SMTest\SMTest.csproj", "{E3514E73-59A5-40B4-A02F-273F50F256BD}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GraphViewer", "GraphViewer\GraphViewer.csproj", "{95FB1A02-C061-40E7-891C-DB708F0C858C}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GraphDisplay", "GraphDisplay\GraphDisplay.csproj", "{806E307F-D4D9-4BE5-A466-F0279D403570}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -23,12 +23,15 @@ Global
 		{E3514E73-59A5-40B4-A02F-273F50F256BD}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{E3514E73-59A5-40B4-A02F-273F50F256BD}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{E3514E73-59A5-40B4-A02F-273F50F256BD}.Release|Any CPU.Build.0 = Release|Any CPU
-		{95FB1A02-C061-40E7-891C-DB708F0C858C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{95FB1A02-C061-40E7-891C-DB708F0C858C}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{95FB1A02-C061-40E7-891C-DB708F0C858C}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{95FB1A02-C061-40E7-891C-DB708F0C858C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{806E307F-D4D9-4BE5-A466-F0279D403570}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{806E307F-D4D9-4BE5-A466-F0279D403570}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{806E307F-D4D9-4BE5-A466-F0279D403570}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{806E307F-D4D9-4BE5-A466-F0279D403570}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {44B65F36-E4B5-4238-A405-854956DFFCB3}
 	EndGlobalSection
 EndGlobal

@@ -15,13 +15,15 @@ using System.Windows.Shapes;
 using Microsoft.Msagl.Drawing;
 using Microsoft.Msagl.WpfGraphControl;
 
-namespace GraphViewerNS
+namespace GraphDisplay
 {
     /// <summary>
     /// Interaction logic for MainWindow.xaml
     /// </summary>
     public partial class MainWindow : Window
     {
+        DockPanel Panel = new DockPanel();
+
         public MainWindow()
         {
             InitializeComponent();
@@ -29,13 +31,14 @@ namespace GraphViewerNS
             Loaded += MainWindow_Loaded;
         }
 
-        private void MainWindow_Loaded(object sender, RoutedEventArgs e) 
+        private void MainWindow_Loaded(object sender, RoutedEventArgs e)
         {
             GraphViewer graphViewer = new GraphViewer();
             graphViewer.BindToPanel(Panel);
             Graph graph = new Graph();
 
-            graph.AddEdge("A", "B");
+            //graph.AddEdge("A", "B");
+            graph = Graph.Read(@"C:\temp\sampleGraph.msagl");
             graph.Attr.LayerDirection = LayerDirection.LR;
             graphViewer.Graph = graph; // throws exception
         }
