@@ -40,7 +40,7 @@
     </Reference>
     <Reference Include="Microsoft.Msagl.WpfGraphControl, Version=3.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\GraphViewer\bin\Debug\Microsoft.Msagl.WpfGraphControl.dll</HintPath>
+      <HintPath>bin\Debug\Microsoft.Msagl.WpfGraphControl.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Data" />
