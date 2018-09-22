@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;4
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
@@ -39,7 +39,7 @@ namespace GraphDisplay
 
             //graph.AddEdge("A", "B");
             graph = Graph.Read(@"C:\temp\sampleGraph.msagl");
-            graph.Attr.LayerDirection = LayerDirection.LR;
+            graph.Attr.LayerDirection = LayerDirection.TB;
             graphViewer.Graph = graph; // throws exception
         }
     }

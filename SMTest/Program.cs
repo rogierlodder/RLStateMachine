@@ -17,17 +17,20 @@ namespace SMTest
             int cmd = 0;
             bool error = false;
 
-            SM.AddState((int)States.none, "None", new List<Transition>
+            SM.AddState(States.none.ToString(), new List<Transition>
             {
-                new Transition("cmdIdle", () => cmd == 1, null, (int)States.Idle),
-                new Transition("error"  , () => error == true, null, (int)States.Error)
+                new Transition("cmdIdle", () => cmd == 1, null, States.Idle.ToString()),
+                new Transition("error"  , () => error == true, null, States.Error.ToString())
             });
 
-            SM.AddState((int)States.Idle, "Idle", new List<Transition>
+            SM.AddState(States.Idle.ToString(), new List<Transition>
             {
-                new Transition("cmdStart", () => cmd == 2, null, (int)States.Starting),
-                new Transition("error"  , () => error == true, null, (int)States.Error)
+                new Transition("cmdStart", () => cmd == 2, null, States.Starting.ToString()),
+                new Transition("error"  , () => error == true, null, States.Error.ToString())
             });
+
+            SM.AddState(States.Starting.ToString(), new List<Transition>
+                { });
 
             SM.SaveGraph(@"C:\temp\sampleGraph");
         }

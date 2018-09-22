@@ -9,12 +9,12 @@ namespace RLStateMachine
 {
     public class RLSM
     {
-        private int _CurrentState;
+        private string _CurrentState;
         private string _Name;
         private Graph G;
-        private Dictionary<int, SMState> Nodes = new Dictionary<int, SMState>();
+        private Dictionary<string, SMState> Nodes = new Dictionary<string, SMState>();
 
-        public int CurrentState  { get { return _CurrentState; } }
+        public string CurrentState  { get { return _CurrentState; } }
         public string Name { get { return _Name; } }
         public Action FirstAction { get; set; }
         public Action LastAction { get; set; }
@@ -33,17 +33,10 @@ namespace RLStateMachine
             G = new Graph();
         }
 
-        public void AddState(int nodenr, string nodename, List<Transition> transitions, Action alwaysAction = null)
+        public void AddState(string nodename, List<Transition> transitions, Action alwaysAction = null)
         {
-            G.AddNode(nodename);
-            SMState N = new SMState(nodenr, nodename, alwaysAction, transitions);
-            Nodes.Add(nodenr, N);
-        }
-
-        public SMState GetState(int stateNr)
-        {
-            if (Nodes.ContainsKey(stateNr)) return Nodes[stateNr];
-            else return null;
+            SMState N = new SMState(nodename, alwaysAction, transitions);
+            Nodes.Add(nodename, N);
         }
 
         public SMState GetState(string stateName)
@@ -55,7 +48,7 @@ namespace RLStateMachine
         {
             FirstAction?.Invoke();
 
-            int? newstate = null;
+            string newstate = null;
             if (Nodes.ContainsKey(_CurrentState)) newstate = Nodes[_CurrentState].RunNode();
 
             LastAction?.Invoke();
@@ -63,26 +56,42 @@ namespace RLStateMachine
 
         public void SaveGraph(string filename)
         {
+            foreach (var N in Nodes) G.AddNode(N.Value.Name);
+
+            foreach (var N in Nodes)
+            {
+                foreach (var T in N.Value.Transitions)
+                {
+                    string newState = "";
+                    newState = T.NewState;
+                    if (!Nodes.ContainsKey(T.NewState))
+                    {
+                        Node NewNode = new Node(newState);
+                        NewNode.Attr.Color = Color.Red;
+                        NewNode.Attr.FillColor = Color.Red;
+                        G.AddNode(NewNode);
+                    }
+
+                    G.AddEdge(N.Value.Name, T.Name, newState);
+                }
+            }
+
             G.Write(filename);
         }
     }
 
     public class SMState
     {
-        private string _Name;
-        private int _StateNum;
-
-        public int Number { get { return _StateNum; } }
-        public string Name { get { return _Name; } }
+        private string _StateName;
+        public string Name { get { return _StateName; } }
 
         public Action AlwaysAction { get; set; }
 
         public List<Transition> Transitions { get; private set; } = new List<Transition>();
 
-        public SMState(int nodenr, string nodename, Action alwaysAction, List<Transition> transitions)
+        public SMState(string nodename, Action alwaysAction, List<Transition> transitions)
         {
-            _StateNum = nodenr;
-            _Name = nodename;
+            _StateName = nodename;
             AlwaysAction = alwaysAction;
 
             //copy transistion list;
@@ -90,7 +99,7 @@ namespace RLStateMachine
             foreach (var T in transitions) Transitions.Add(T.Copy());
         }
 
-        public int? RunNode()
+        public string RunNode()
         {
             AlwaysAction?.Invoke();
             foreach (var T in Transitions)
@@ -103,45 +112,50 @@ namespace RLStateMachine
 
     public class Transition
     {
-        private string Name;
+        private string _Name;
+        private string _NewState;
+
         private Func<bool> Condition;
         private Action OperationsIfTrue;
-        private int NewState;
+
+        public string NewState { get { return _NewState; } }
+        public string Name { get { return _Name; } }
 
         public Transition()
         {
-            Name = "";
+            _Name = "";
             Condition = () => false;
             OperationsIfTrue = () => { };
-            NewState = 0;            
+            _NewState = "";            
         }
 
-        public Transition(string name, Func<bool> condition, Action operationsiftrue, int newstate)
+        public Transition(string name, Func<bool> condition, Action operationsiftrue, string newstate)
         {
-            Name = name;
+            _Name = name;
+            _NewState = newstate;
             Condition = condition;
             OperationsIfTrue = operationsiftrue;
-            NewState = newstate;
         }
 
-        public int? Check()
+        public string Check()
         {
             if (Condition.Invoke())
             {
                 OperationsIfTrue?.Invoke();
-                return NewState;
+                return _NewState;
             }
-            else return null;
+            else return "";
         }
 
         public Transition Copy()
         {
-            var T = new Transition();
-            T.Name = this.Name;
-            T.Condition = this.Condition;
-            T.OperationsIfTrue = this.OperationsIfTrue;
-            T.NewState = this.NewState;
-
+            var T = new Transition
+            {
+                _Name = this._Name,
+                Condition = this.Condition,
+                OperationsIfTrue = this.OperationsIfTrue,
+                _NewState = this._NewState
+            };
             return T;
         }
     }
