@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -30,9 +32,25 @@ namespace SMTest
             });
 
             SM.AddState(States.Starting.ToString(), new List<Transition>
-                { });
+            {
+                new Transition("Started", () => false, null, States.Started.ToString())
+            });
+
+            SM.AddState(States.Started.ToString(), new List<Transition>
+            { });
+
+            SM.AddState(States.Error.ToString(), new List<Transition>
+            { });
 
             SM.SaveGraph(@"C:\temp\sampleGraph");
+
+            Process proc = new Process();
+            proc.StartInfo.FileName = @"GraphDisplay.exe";
+            proc.StartInfo.WorkingDirectory = Path.GetDirectoryName(@"..\..\..\GraphDisplay\bin\debug\");
+            proc.StartInfo.Arguments = @"c:\Temp\sampleGraph.msagl";
+            proc.Start();
+            
+            // ..\..\..\GraphDisplay\bin\debug\GraphDisplay c:\Temp\sampleGraph.msagl        
         }
     }
 }

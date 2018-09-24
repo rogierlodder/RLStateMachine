@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -33,14 +34,18 @@ namespace GraphDisplay
 
         private void MainWindow_Loaded(object sender, RoutedEventArgs e)
         {
+            string fileName = Environment.GetCommandLineArgs()[1];
             GraphViewer graphViewer = new GraphViewer();
-            graphViewer.BindToPanel(Panel);
-            Graph graph = new Graph();
 
-            //graph.AddEdge("A", "B");
-            graph = Graph.Read(@"C:\temp\sampleGraph.msagl");
-            graph.Attr.LayerDirection = LayerDirection.TB;
-            graphViewer.Graph = graph; // throws exception
+            if (File.Exists(fileName))
+            {
+                graphViewer.BindToPanel(Panel);
+                Graph graph = new Graph();
+                
+                graph = Graph.Read(fileName);
+                graph.Attr.LayerDirection = LayerDirection.TB;
+                graphViewer.Graph = graph; 
+            }
         }
     }
 }
