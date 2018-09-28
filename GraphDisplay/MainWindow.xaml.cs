@@ -34,17 +34,20 @@ namespace GraphDisplay
 
         private void MainWindow_Loaded(object sender, RoutedEventArgs e)
         {
-            string fileName = Environment.GetCommandLineArgs()[1];
-            GraphViewer graphViewer = new GraphViewer();
-
-            if (File.Exists(fileName))
+            if (Environment.GetCommandLineArgs().Length >= 1)
             {
-                graphViewer.BindToPanel(Panel);
-                Graph graph = new Graph();
-                
-                graph = Graph.Read(fileName);
-                graph.Attr.LayerDirection = LayerDirection.TB;
-                graphViewer.Graph = graph; 
+                string fileName = Environment.GetCommandLineArgs()[1];
+                GraphViewer graphViewer = new GraphViewer();
+
+                if (File.Exists(fileName))
+                {
+                    graphViewer.BindToPanel(Panel);
+                    Graph graph = new Graph();
+
+                    graph = Graph.Read(fileName);
+                    graph.Attr.LayerDirection = LayerDirection.TB;
+                    graphViewer.Graph = graph;
+                }
             }
         }
     }

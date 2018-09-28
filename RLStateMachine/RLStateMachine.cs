@@ -12,18 +12,17 @@ namespace RLStateMachine
         private string _CurrentState;
         private string _Name;
         private Graph G;
-        private Dictionary<string, SMState> Nodes = new Dictionary<string, SMState>();
+        private Dictionary<string, SMState> States = new Dictionary<string, SMState>();
 
-        public string CurrentState  { get { return _CurrentState; } }
         public string Name { get { return _Name; } }
         public Action FirstAction { get; set; }
         public Action LastAction { get; set; }
-        public string CurrentStateName
+        public string CurrentState
         {
             get
             {
-                if (Nodes.ContainsKey(_CurrentState)) return Nodes[_CurrentState].Name;
-                else return "<Unknown>";
+                if (_CurrentState is null) return "<Unknown>";
+                else return _CurrentState;
             }
         }
 
@@ -33,38 +32,100 @@ namespace RLStateMachine
             G = new Graph();
         }
 
-        public void AddState(string nodename, List<Transition> transitions, Action alwaysAction = null)
+        public void Reset()
         {
-            SMState N = new SMState(nodename, alwaysAction, transitions);
-            Nodes.Add(nodename, N);
+            try
+            {
+                _CurrentState = States.Values.Where(p => p.Type == SMState.StateType.entry).First().Name;
+            }
+            catch (Exception e)
+            {
+                throw new Exception("The state machine cannot be reset as it does not have a single unique entry state");
+            }
+        }
+
+        public SMState AddState(string nodename, List<Transition> transitions, Action alwaysAction = null, SMState.StateType type = SMState.StateType.idle)
+        {
+            SMState N = new SMState(nodename, alwaysAction, transitions, type);
+            States.Add(nodename, N);
+            return N;
         }
 
         public SMState GetState(string stateName)
         {
-            return Nodes.Values.Where(p => p.Name == stateName).FirstOrDefault();
+            return States.Values.Where(p => p.Name == stateName).FirstOrDefault();
         }
 
         public void Run()
         {
             FirstAction?.Invoke();
 
-            string newstate = null;
-            if (Nodes.ContainsKey(_CurrentState)) newstate = Nodes[_CurrentState].RunNode();
+            if (States.ContainsKey(_CurrentState))
+            {
+                string newState = States[_CurrentState].RunNode();
+                if (newState != "") _CurrentState = newState;
+            }
 
             LastAction?.Invoke();
         }
 
         public void SaveGraph(string filename)
         {
-            foreach (var N in Nodes) G.AddNode(N.Value.Name);
+            Reset(); 
+             
+            //add all nodes and assign the color and shape
+            foreach (var N in States)
+            {
+                Node NewNode = new Node(N.Value.Name);
+                Color NodeColor = new Color();
+                Shape NodeShape = new Shape();
+                int lineWidth = 2;
+                NodeShape = Shape.Box;
+                int lableMargin = 1;
+                switch (N.Value.Type)
+                {
+                    case SMState.StateType.entry:
+                        NodeColor = Color.Green;
+                        NodeShape = Shape.Circle;
+                        lableMargin = 2;
+                        break;
+                    case SMState.StateType.end:
+                        NodeColor = Color.DarkBlue;
+                        lableMargin = 3;
+                        break;
+                    case SMState.StateType.transition:
+                        NodeColor = Color.CadetBlue;
+                        NodeShape = Shape.Ellipse;
+                        break;
+                    case SMState.StateType.error:
+                        NodeColor = Color.Red;
+                        NodeShape = Shape.Ellipse;
+                        lableMargin = 0;
+                        lineWidth = 3;
+                        break;
+                    case SMState.StateType.idle:
+                        NodeColor = Color.Black;
+                        NodeShape = Shape.Diamond;
+                        break;
+                    default:
+                        break;
+                }
+                NewNode.Attr.Color = NodeColor;
+                NewNode.Attr.Shape = NodeShape;
+                NewNode.Attr.LineWidth = lineWidth;
+                NewNode.Attr.LabelMargin = lableMargin;
+                if (N.Value.Transitions.Count == 0 && N.Value.Type != SMState.StateType.end) NewNode.Attr.FillColor = Color.Red;
+                G.AddNode(NewNode);
+            }
 
-            foreach (var N in Nodes)
+            //add transitions
+            foreach (var N in States)
             {
                 foreach (var T in N.Value.Transitions)
                 {
                     string newState = "";
                     newState = T.NewState;
-                    if (!Nodes.ContainsKey(T.NewState))
+                    if (!States.ContainsKey(T.NewState))
                     {
                         Node NewNode = new Node(newState);
                         NewNode.Attr.Color = Color.Red;
@@ -72,7 +133,7 @@ namespace RLStateMachine
                         G.AddNode(NewNode);
                     }
 
-                    G.AddEdge(N.Value.Name, T.Name, newState);
+                    G.AddEdge(N.Value.Name, $" {T.Name} ", newState);
                 }
             }
 
@@ -82,18 +143,22 @@ namespace RLStateMachine
 
     public class SMState
     {
+        public enum StateType { entry, end, transition, error, idle}
+
         private string _StateName;
+        private StateType _Type;
         public string Name { get { return _StateName; } }
+        public StateType Type { get { return _Type; } }
 
         public Action AlwaysAction { get; set; }
 
         public List<Transition> Transitions { get; private set; } = new List<Transition>();
 
-        public SMState(string nodename, Action alwaysAction, List<Transition> transitions)
+        public SMState(string nodename, Action alwaysAction, List<Transition> transitions, StateType type = StateType.idle)
         {
             _StateName = nodename;
             AlwaysAction = alwaysAction;
-
+            _Type = type;
             //copy transistion list;
             Transitions = new List<Transition>();
             foreach (var T in transitions) Transitions.Add(T.Copy());
