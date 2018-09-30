@@ -5,6 +5,8 @@ using Microsoft.Msagl.Drawing;
 
 namespace RLStateMachine
 {
+    public enum StateType { entry, end, transition, error, idle }
+
     public class RLSM
     {
         private string _CurrentState;
@@ -36,7 +38,7 @@ namespace RLStateMachine
         {
             try
             {
-                _CurrentState = States.Values.Where(p => p.Type == SMState.StateType.entry).First().Name;
+                _CurrentState = States.Values.Where(p => p.Type == StateType.entry).First().Name;
             }
             catch (Exception e)
             {
@@ -44,14 +46,14 @@ namespace RLStateMachine
             }
         }
 
-        public SMState AddState(string stateName, List<Transition> transitions, Action alwaysAction = null, SMState.StateType type = SMState.StateType.idle)
+        public SMState AddState(Enum stateName, List<Transition> transitions, Action alwaysAction = null, StateType type = StateType.idle)
         {
-            if (stateName == "" || stateName is null)
+            if (stateName.ToString() == "" || stateName is null)
             {
                 throw new Exception("The name of a node cannot be null or empty");
             }
             SMState N = new SMState(stateName, alwaysAction, transitions, type);
-            States.Add(stateName, N);
+            States.Add(stateName.ToString(), N);
             return N;
         }
 
@@ -98,26 +100,26 @@ namespace RLStateMachine
                 int lableMargin = 1;
                 switch (N.Value.Type)
                 {
-                    case SMState.StateType.entry:
+                    case StateType.entry:
                         NodeColor = Color.Green;
                         NodeShape = Shape.Circle;
                         lableMargin = 2;
                         break;
-                    case SMState.StateType.end:
+                    case StateType.end:
                         NodeColor = Color.DarkBlue;
                         lableMargin = 3;
                         break;
-                    case SMState.StateType.transition:
+                    case StateType.transition:
                         NodeColor = Color.CadetBlue;
                         NodeShape = Shape.Ellipse;
                         break;
-                    case SMState.StateType.error:
+                    case StateType.error:
                         NodeColor = Color.Red;
                         NodeShape = Shape.Ellipse;
                         lableMargin = 0;
                         lineWidth = 3;
                         break;
-                    case SMState.StateType.idle:
+                    case StateType.idle:
                         NodeColor = Color.Black;
                         NodeShape = Shape.Diamond;
                         break;
@@ -128,7 +130,7 @@ namespace RLStateMachine
                 NewNode.Attr.Shape = NodeShape;
                 NewNode.Attr.LineWidth = lineWidth;
                 NewNode.Attr.LabelMargin = lableMargin;
-                if (N.Value.Transitions.Count == 0 && N.Value.Type != SMState.StateType.end) NewNode.Attr.FillColor = Color.Red;
+                if (N.Value.Transitions.Count == 0 && N.Value.Type != StateType.end) NewNode.Attr.FillColor = Color.Red;
                 G.AddNode(NewNode);
             }
 
@@ -157,9 +159,7 @@ namespace RLStateMachine
 
     public class SMState
     {
-        public enum StateType { entry, end, transition, error, idle}
-
-        private string _StateName;
+         private string _StateName;
         private StateType _Type;
         public string Name { get { return _StateName; } }
         public StateType Type { get { return _Type; } }
@@ -168,9 +168,9 @@ namespace RLStateMachine
 
         public List<Transition> Transitions { get; private set; } = new List<Transition>();
 
-        public SMState(string nodename, Action alwaysAction, List<Transition> transitions, StateType type = StateType.idle)
+        public SMState(Enum nodename, Action alwaysAction, List<Transition> transitions, StateType type = StateType.idle)
         {
-            _StateName = nodename;
+            _StateName = nodename.ToString();
             AlwaysAction = alwaysAction;
             _Type = type;
             //copy transistion list;
@@ -208,10 +208,10 @@ namespace RLStateMachine
             _NewState = "";            
         }
 
-        public Transition(string name, Func<bool> condition, Action operationsiftrue, string newstate)
+        public Transition(string name, Func<bool> condition, Action operationsiftrue, Enum newstate)
         {
             _Name = name;
-            _NewState = newstate;
+            _NewState = newstate.ToString();
             Condition = condition;
             OperationsIfTrue = operationsiftrue;
         }
