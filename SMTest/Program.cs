@@ -21,35 +21,37 @@ namespace SMTest
             //SM.FirstAction = () => Console.WriteLine("We always to this first");
             //SM.LastAction = () => Console.WriteLine("And finally we do this\n");
 
+            SM.StateChanged = (p) => { Console.WriteLine($"New State : {p}"); };
+
             SM.AddState(States.Entry.ToString(), new List<Transition>
             {
-                new Transition("cmdIdle", () => cmd == 1, () => Console.WriteLine("Going to the idle state"), States.Idle.ToString()),
+                new Transition("cmdIdle", () => cmd == 1, () => { }, States.Idle.ToString()),
             }, null, SMState.StateType.entry);
 
             SM.AddState(States.Idle.ToString(), new List<Transition>
             {
-                new Transition("cmdStart", () => cmd == 2, null, States.Starting.ToString()),
+                new Transition("cmdStart", () => true, null, States.Starting.ToString()),
                 new Transition("error"  , () => error == true, null, States.Error.ToString())
-            }, () => Console.WriteLine("Running in the idle state"), SMState.StateType.idle);
+            }, () => { }, SMState.StateType.idle);
 
             SM.AddState(States.Starting.ToString(), new List<Transition>
             {
-                new Transition("Started", () => false, null, States.Started.ToString())
+                new Transition("Started", () => true, null, States.Started.ToString())
             }, null, SMState.StateType.transition);
 
             SM.AddState(States.Started.ToString(), new List<Transition>
             {
-               new Transition("CmdStop", ()=>false, null, States.Stopping.ToString())
+               new Transition("CmdStop", () => true, null, States.Stopping.ToString())
             }, null, SMState.StateType.idle);
 
             SM.AddState(States.Error.ToString(), new List<Transition>
             {
-                new Transition("cmdReset", () => cmd == 2, null, States.Starting.ToString()),
+                new Transition("cmdReset", () => true, null, States.Starting.ToString()),
             }, null, SMState.StateType.error);
 
             SM.AddState(States.Stopping.ToString(), new List<Transition>
             {
-               new Transition("Stopped", ()=>false, null, States.Stopped.ToString()),
+               new Transition("Stopped", () => true, null, States.Stopped.ToString()),
                new Transition("error"  , () => error == true, null, States.Error.ToString())
             }, null, SMState.StateType.transition);
 
@@ -61,22 +63,23 @@ namespace SMTest
             ShowGraph();
 
             SM.Reset();
-            Console.WriteLine(SM.CurrentState);
 
             SM.Run();
-            Console.WriteLine(SM.CurrentState);
 
             cmd = 1;
             SM.Run();
-            Console.WriteLine(SM.CurrentState);
-            SM.Run();
 
-            cmd = 2;
-            SM.Run();
-            Console.WriteLine(SM.CurrentState);
-            SM.Run();
+            //cmd = 2;
+            //SM.Run();
+
+            //SM.Run();
 
             Console.ReadLine();
+        }
+
+        private static void useEnum(Enum E, int s)
+        {
+
         }
 
         private static void ShowGraph()

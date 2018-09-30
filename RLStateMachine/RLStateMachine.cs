@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Microsoft.Msagl.Drawing;
 
 namespace RLStateMachine
@@ -10,25 +8,27 @@ namespace RLStateMachine
     public class RLSM
     {
         private string _CurrentState;
-        private string _Name;
         private Graph G;
-        private Dictionary<string, SMState> States = new Dictionary<string, SMState>();
 
-        public string Name { get { return _Name; } }
+        public string Name { get; }
         public Action FirstAction { get; set; }
         public Action LastAction { get; set; }
+        public Dictionary<string, SMState> States { get; } = new Dictionary<string, SMState>();
+
         public string CurrentState
         {
             get
             {
-                if (_CurrentState is null) return "<Unknown>";
+                if (_CurrentState is null || _CurrentState == "") return "<Unknown>";
                 else return _CurrentState;
             }
         }
 
+        public Action<string> StateChanged { get; set; }
+
         public RLSM(string name)
         {
-            _Name = name;
+            Name = name;
             G = new Graph();
         }
 
@@ -40,32 +40,46 @@ namespace RLStateMachine
             }
             catch (Exception e)
             {
-                throw new Exception("The state machine cannot be reset as it does not have a single unique entry state");
+                throw new Exception($"The {Name} state machine cannot be reset as it does not have a single unique entry state");
             }
         }
 
-        public SMState AddState(string nodename, List<Transition> transitions, Action alwaysAction = null, SMState.StateType type = SMState.StateType.idle)
+        public SMState AddState(string stateName, List<Transition> transitions, Action alwaysAction = null, SMState.StateType type = SMState.StateType.idle)
         {
-            SMState N = new SMState(nodename, alwaysAction, transitions, type);
-            States.Add(nodename, N);
+            if (stateName == "" || stateName is null)
+            {
+                throw new Exception("The name of a node cannot be null or empty");
+            }
+            SMState N = new SMState(stateName, alwaysAction, transitions, type);
+            States.Add(stateName, N);
             return N;
         }
 
         public SMState GetState(string stateName)
         {
-            return States.Values.Where(p => p.Name == stateName).FirstOrDefault();
+            if (States.ContainsKey(stateName)) return States[stateName];
+            else return null;
         }
 
         public void Run()
         {
             FirstAction?.Invoke();
-
-            if (States.ContainsKey(_CurrentState))
+            string oldState = null;
+            
+            //keep runnng the nodes until the state does not change
+            while (oldState != _CurrentState)
             {
-                string newState = States[_CurrentState].RunNode();
-                if (newState != "") _CurrentState = newState;
+                oldState = _CurrentState;
+                if (States.ContainsKey(_CurrentState))
+                {
+                    string newState = States[_CurrentState]?.RunNode();
+                    if (newState != "")
+                    {
+                        _CurrentState = newState;
+                        StateChanged?.Invoke(newState);
+                    }
+                }
             }
-
             LastAction?.Invoke();
         }
 
@@ -171,7 +185,7 @@ namespace RLStateMachine
             {
                 if (T != null) return T.Check();                    
             }
-            return null;
+            return "";
         }
     }
 
