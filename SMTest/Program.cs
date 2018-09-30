@@ -77,11 +77,6 @@ namespace SMTest
             Console.ReadLine();
         }
 
-        private static void useEnum(Enum E, int s)
-        {
-
-        }
-
         private static void ShowGraph()
         {
             Process proc = new Process();
