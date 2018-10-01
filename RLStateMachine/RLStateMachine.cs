@@ -92,11 +92,11 @@ namespace RLStateMachine
             //add all nodes and assign the color and shape
             foreach (var N in States)
             {
-                Node NewNode = new Node(N.Value.Name);
                 Color NodeColor = new Color();
                 Shape NodeShape = new Shape();
-                int lineWidth = 2;
                 NodeShape = Shape.Box;
+
+                int lineWidth = 2;
                 int lableMargin = 1;
                 switch (N.Value.Type)
                 {
@@ -126,19 +126,27 @@ namespace RLStateMachine
                     default:
                         break;
                 }
+                Node NewNode = new Node(N.Value.Name);
                 NewNode.Attr.Color = NodeColor;
                 NewNode.Attr.Shape = NodeShape;
                 NewNode.Attr.LineWidth = lineWidth;
                 NewNode.Attr.LabelMargin = lableMargin;
+
+                //check if the state has outgoing transitions
                 if (N.Value.Transitions.Count == 0 && N.Value.Type != StateType.end) NewNode.Attr.FillColor = Color.Red;
+
                 G.AddNode(NewNode);
             }
+            //list of all transitions
+            var AllTrans = new List<Transition>();
 
             //add transitions
             foreach (var N in States)
             {
                 foreach (var T in N.Value.Transitions)
                 {
+                    AllTrans.Add(T);
+
                     string newState = "";
                     newState = T.NewState;
                     if (!States.ContainsKey(T.NewState))
@@ -150,6 +158,15 @@ namespace RLStateMachine
                     }
 
                     G.AddEdge(N.Value.Name, $" {T.Name} ", newState);
+                }
+            }
+
+            //Check is there are states that have no ingoing transitions
+            foreach (var N in States.Values)
+            {
+                if (N.Type != StateType.entry && AllTrans.Count(p => p.NewState == N.Name) == 0)
+                {
+                    G.Nodes.Where(q => q.Id == N.Name).First().Attr.FillColor = Color.Magenta;
                 }
             }
 

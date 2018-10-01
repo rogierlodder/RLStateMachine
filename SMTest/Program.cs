@@ -11,7 +11,7 @@ namespace SMTest
 {
     class Program
     {
-        enum States {Entry, Idle, Starting, Started, Stopping, Stopped, Error}
+        enum States {Entry, Idle, Starting, Started, Stopping, Stopped, Error, Waiting}
 
         static void Main(string[] args)
         {
@@ -31,9 +31,14 @@ namespace SMTest
             SM.AddState(States.Idle, new List<Transition>
             {
                 new Transition("cmdStart", () => true, null, States.Starting),
-                new Transition("error"  , () => error == true, null, States.Error)
+                new Transition("error"  , () => error == true, null, States.Error),
+                new Transition("Wait", ()=>true, null, States.Waiting)
             }, () => { }, StateType.idle);
 
+            SM.AddState(States.Error, new List<Transition>
+            {
+                new Transition("cmdReset", () => true, null, States.Starting),
+            }, null, StateType.error);
             SM.AddState(States.Starting, new List<Transition>
             {
                 new Transition("Started", () => true, null, States.Started)
@@ -44,10 +49,6 @@ namespace SMTest
                new Transition("CmdStop", () => true, null, States.Stopping)
             }, null, StateType.idle);
 
-            SM.AddState(States.Error, new List<Transition>
-            {
-                new Transition("cmdReset", () => true, null, States.Starting),
-            }, null, StateType.error);
 
             SM.AddState(States.Stopping, new List<Transition>
             {
@@ -55,8 +56,13 @@ namespace SMTest
                new Transition("error"  , () => error == true, null, States.Error)
             }, null, StateType.transition);
 
+            SM.AddState(States.Waiting, new List<Transition> { new Transition("WaitOver", ()=> true, null, States.Idle)}, null, StateType.transition);
+
             SM.AddState(States.Stopped, new List<Transition>
-            {  }, null, StateType.end);
+            {
+               
+            }, null, StateType.end);
+
 
             SM.SaveGraph(@"C:\temp\sampleGraph");
 
