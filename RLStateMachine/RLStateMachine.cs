@@ -57,9 +57,8 @@ namespace RLStateMachine
         {
             FirstAction?.Invoke();
             Enum oldState = null;
-            
-            //keep runnng the nodes until the state does not change
-            while (oldState != CurrentState)
+
+            do
             {
                 oldState = CurrentState;
                 if (States.ContainsKey(CurrentState))
@@ -71,7 +70,8 @@ namespace RLStateMachine
                         StateChanged?.Invoke(newState);
                     }
                 }
-            }
+            } while (oldState != CurrentState);
+
             LastAction?.Invoke();
         }
 
@@ -190,7 +190,10 @@ namespace RLStateMachine
             AlwaysAction?.Invoke();
             foreach (var T in Transitions)
             {
-                if (T != null && T.Check() != null) return T.Check();                    
+                if (T == null) return null;
+
+                var newState = T.CheckTransition();
+                if (newState != null) return newState;                    
             }
             return null;
         }
@@ -223,7 +226,7 @@ namespace RLStateMachine
             OperationsIfTrue = operationsiftrue;
         }
 
-        public Enum Check()
+        public Enum CheckTransition()
         {
             if (Condition.Invoke())
             {
