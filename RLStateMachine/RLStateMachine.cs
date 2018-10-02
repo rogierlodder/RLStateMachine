@@ -9,24 +9,14 @@ namespace RLStateMachine
 
     public class RLSM
     {
-        private string _CurrentState;
         private Graph G;
 
-        public string Name { get; }
+        public string Name { get; private set; }
         public Action FirstAction { get; set; }
         public Action LastAction { get; set; }
-        public Dictionary<string, SMState> States { get; } = new Dictionary<string, SMState>();
-
-        public string CurrentState
-        {
-            get
-            {
-                if (_CurrentState is null || _CurrentState == "") return "<Unknown>";
-                else return _CurrentState;
-            }
-        }
-
-        public Action<string> StateChanged { get; set; }
+        public Dictionary<Enum, SMState> States { get; private set; } = new Dictionary<Enum, SMState>();
+        public Enum CurrentState { get; private set; }
+        public Action<Enum> StateChanged { get; set; }
 
         public RLSM(string name)
         {
@@ -38,7 +28,7 @@ namespace RLStateMachine
         {
             try
             {
-                _CurrentState = States.Values.Where(p => p.Type == StateType.entry).First().Name;
+                CurrentState = States.Where(p => p.Value.Type == StateType.entry).First().Key;
             }
             catch (Exception e)
             {
@@ -53,11 +43,11 @@ namespace RLStateMachine
                 throw new Exception("The name of a node cannot be null or empty");
             }
             SMState N = new SMState(stateName, alwaysAction, transitions, type);
-            States.Add(stateName.ToString(), N);
+            States.Add(stateName, N);
             return N;
         }
 
-        public SMState GetState(string stateName)
+        public SMState GetState(Enum stateName)
         {
             if (States.ContainsKey(stateName)) return States[stateName];
             else return null;
@@ -66,18 +56,18 @@ namespace RLStateMachine
         public void Run()
         {
             FirstAction?.Invoke();
-            string oldState = null;
+            Enum oldState = null;
             
             //keep runnng the nodes until the state does not change
-            while (oldState != _CurrentState)
+            while (oldState != CurrentState)
             {
-                oldState = _CurrentState;
-                if (States.ContainsKey(_CurrentState))
+                oldState = CurrentState;
+                if (States.ContainsKey(CurrentState))
                 {
-                    string newState = States[_CurrentState]?.RunNode();
-                    if (newState != "")
+                    Enum newState = States[CurrentState]?.RunNode();
+                    if (newState != null)
                     {
-                        _CurrentState = newState;
+                        CurrentState = newState;
                         StateChanged?.Invoke(newState);
                     }
                 }
@@ -147,24 +137,24 @@ namespace RLStateMachine
                 {
                     AllTrans.Add(T);
 
-                    string newState = "";
+                    Enum newState = null;
                     newState = T.NewState;
                     if (!States.ContainsKey(T.NewState))
                     {
-                        Node NewNode = new Node(newState);
+                        Node NewNode = new Node(newState.ToString());
                         NewNode.Attr.Color = Color.Red;
                         NewNode.Attr.FillColor = Color.Red;
                         G.AddNode(NewNode);
                     }
 
-                    G.AddEdge(N.Value.Name, $" {T.Name} ", newState);
+                    G.AddEdge(N.Value.Name, $" {T.Name} ", newState.ToString());
                 }
             }
 
             //Check is there are states that have no ingoing transitions
             foreach (var N in States.Values)
             {
-                if (N.Type != StateType.entry && AllTrans.Count(p => p.NewState == N.Name) == 0)
+                if (N.Type != StateType.entry && AllTrans.Count(p => p.NewState.ToString() == N.Name) == 0)
                 {
                     G.Nodes.Where(q => q.Id == N.Name).First().Attr.FillColor = Color.Magenta;
                 }
@@ -195,26 +185,26 @@ namespace RLStateMachine
             foreach (var T in transitions) Transitions.Add(T.Copy());
         }
 
-        public string RunNode()
+        public Enum RunNode()
         {
             AlwaysAction?.Invoke();
             foreach (var T in Transitions)
             {
-                if (T != null) return T.Check();                    
+                if (T != null && T.Check() != null) return T.Check();                    
             }
-            return "";
+            return null;
         }
     }
 
     public class Transition
     {
         private string _Name;
-        private string _NewState;
+        private Enum _NewState;
 
         private Func<bool> Condition;
         private Action OperationsIfTrue;
 
-        public string NewState { get { return _NewState; } }
+        public Enum NewState { get { return _NewState; } }
         public string Name { get { return _Name; } }
 
         public Transition()
@@ -222,25 +212,25 @@ namespace RLStateMachine
             _Name = "";
             Condition = () => false;
             OperationsIfTrue = () => { };
-            _NewState = "";            
+            _NewState = null;            
         }
 
         public Transition(string name, Func<bool> condition, Action operationsiftrue, Enum newstate)
         {
             _Name = name;
-            _NewState = newstate.ToString();
+            _NewState = newstate;
             Condition = condition;
             OperationsIfTrue = operationsiftrue;
         }
 
-        public string Check()
+        public Enum Check()
         {
             if (Condition.Invoke())
             {
                 OperationsIfTrue?.Invoke();
                 return _NewState;
             }
-            else return "";
+            else return null;
         }
 
         public Transition Copy()

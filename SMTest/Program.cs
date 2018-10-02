@@ -30,8 +30,8 @@ namespace SMTest
 
             SM.AddState(States.Idle, new List<Transition>
             {
-                new Transition("cmdStart", () => true, null, States.Starting),
                 new Transition("error"  , () => error == true, null, States.Error),
+                new Transition("cmdStart", () => true, null, States.Starting),
                 new Transition("Wait", ()=>true, null, States.Waiting)
             }, () => { }, StateType.idle);
 
