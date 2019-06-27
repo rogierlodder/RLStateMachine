@@ -3,7 +3,8 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Xml;
-using System.Xml.Linq;
+using System.Xml.Serialization;
+using Microsoft.Msagl.Drawing;
 
 namespace RLStateMachine
 {
@@ -11,6 +12,8 @@ namespace RLStateMachine
 
     public class RLSM
     {
+        private Graph G;
+
         public string Name { get; private set; }
         public Action FirstAction { get; set; }
         public Action LastAction { get; set; }
@@ -21,6 +24,7 @@ namespace RLStateMachine
         public RLSM(string name)
         {
             Name = name;
+            G = new Graph();
         }
 
         public void Reset()
@@ -74,51 +78,23 @@ namespace RLStateMachine
             LastAction?.Invoke();
         }
 
-        public bool SaveGraph(string filename)
+        public void SaveGraph(string filename)
         {
-            XElement root = new XElement("StateDiagram");
-            root.Add(new XAttribute("Name", Name));
-            root.Add(new XAttribute("HasFirstAction", FirstAction == null));
-            root.Add(new XAttribute("HasLastAction", LastAction == null));
-            var states = new XElement("States");
+            var writer = new System.Xml.Serialization.XmlSerializer(typeof(RLSM));
+            var file = new System.IO.StreamWriter(filename);
 
-            foreach (var S in States)
-            {
-                var transitions = new XElement("Transitions");
-                foreach (var T in S.Value.Transitions)
-                {
-                    var t = new XElement("Transition");
-                    t.Add(new XAttribute("Event", T.Name));
-                    t.Add(new XAttribute("TargetState", T.NewState));
-                    transitions.Add(t);
-                }
-                var state = new XElement("State");
-                state.Add(new XAttribute("Name", S.Key));
-                state.Add(new XAttribute("Type", S.Value.Type));
-                state.Add(transitions);
-
-                states.Add(state);
-            }
-            root.Add(states);
-            try
-            {
-                root.Save(filename);
-                return true;
-            }
-            catch
-            {
-                Console.WriteLine("State diagram file could not be saved.");
-                return false;
-            }
+            writer.Serialize(file, this);
+            file.Close();
         }
 
     }
     public class SMState
     {
-        private string _StateName;
+         private string _StateName;
         private StateType _Type;
         public string Name { get { return _StateName; } }
         public StateType Type { get { return _Type; } }
+
         public Action AlwaysAction { get; set; }
 
         public List<Transition> Transitions { get; private set; } = new List<Transition>();
@@ -141,7 +117,7 @@ namespace RLStateMachine
                 if (T == null) return null;
 
                 var newState = T.CheckTransition();
-                if (newState != null) return newState;
+                if (newState != null) return newState;                    
             }
             return null;
         }
@@ -151,6 +127,7 @@ namespace RLStateMachine
     {
         private string _Name;
         private Enum _NewState;
+
         private Func<bool> Condition;
         private Action OperationsIfTrue;
 
@@ -162,7 +139,7 @@ namespace RLStateMachine
             _Name = "";
             Condition = () => false;
             OperationsIfTrue = () => { };
-            _NewState = null;
+            _NewState = null;            
         }
 
         public Transition(string name, Func<bool> condition, Action operationsiftrue, Enum newstate)
@@ -196,4 +173,3 @@ namespace RLStateMachine
         }
     }
 }
-

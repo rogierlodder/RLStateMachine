@@ -64,7 +64,7 @@ namespace SMTest
             }, null, StateType.end);
 
 
-            SM.SaveGraph(@"C:\temp\sampleGraph");
+            SM.SaveGraph(@"C:\temp\sampleGraph.xml");
 
             ShowGraph();
 
@@ -88,7 +88,7 @@ namespace SMTest
             Process proc = new Process();
             proc.StartInfo.FileName = @"GraphDisplay.exe";
             proc.StartInfo.WorkingDirectory = Path.GetDirectoryName(@"..\..\..\GraphDisplay\bin\debug\");
-            proc.StartInfo.Arguments = @"c:\Temp\sampleGraph.msagl";
+            proc.StartInfo.Arguments = @"c:\Temp\sampleGraph.xml";
             proc.Start();
         }
     }
